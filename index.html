@@ -424,6 +424,7 @@
   <div class="app-header">
     <h1>勤怠カレンダー</h1>
     <p>一般社団法人ツーリストシップ</p>
+    <button onclick="syncFromGAS()" style="margin-top:6px;font-size:11px;padding:4px 12px;border:1px solid #d1d5db;border-radius:20px;background:white;color:#6b7280;cursor:pointer;">🔄 データを同期</button>
   </div>
 
   <!-- Sticky control panel -->
@@ -553,6 +554,27 @@ async function syncGAS() {
       headers:{ 'Content-Type':'application/json' }
     });
   } catch(e) { /* オフライン時は無視 */ }
+}
+
+async function loadFromGAS() {
+  const gasUrl = localStorage.getItem('ls_gasUrl');
+  if (!gasUrl) return;
+  try {
+    const res = await fetch(gasUrl + '?action=getData');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && (data.absences || data.events)) {
+      calData = data;
+      localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
+    }
+  } catch(e) { /* オフライン時は無視 */ }
+}
+
+async function syncFromGAS() {
+  showToast('データを同期中…');
+  await loadFromGAS();
+  renderAll();
+  showToast('同期しました');
 }
 
 // ================================================================
@@ -987,7 +1009,10 @@ function showToast(msg) {
 pickEmp('tanaka');
 pickMode('yasumi');
 loadLineSettings();
-renderAll();
+(async () => {
+  await loadFromGAS();
+  renderAll();
+})();
 </script>
 </body>
 </html>
