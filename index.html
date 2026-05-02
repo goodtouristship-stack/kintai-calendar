@@ -544,16 +544,48 @@ function saveData() {
   syncGAS();
 }
 
+function mergeData(local, gas) {
+  const merged = { absences: {}, events: {} };
+  ['tanaka','haruta','kamizato'].forEach(key => {
+    const a = (local.absences && local.absences[key]) || [];
+    const b = (gas.absences   && gas.absences[key])   || [];
+    merged.absences[key] = [...new Set([...a, ...b])].sort();
+  });
+  const allDates = new Set([...Object.keys(local.events||{}), ...Object.keys(gas.events||{})]);
+  allDates.forEach(ds => {
+    const a = (local.events && local.events[ds]) || [];
+    const b = (gas.events   && gas.events[ds])   || [];
+    const all = [...a, ...b];
+    merged.events[ds] = all.filter((ev, i) => {
+      const n = typeof ev==='string' ? ev : ev.name;
+      const p = typeof ev==='object' ? ev.emp : null;
+      return all.findIndex(e => (typeof e==='string'?e:e.name)===n && (typeof e==='object'?e.emp:null)===p) === i;
+    });
+    if (merged.events[ds].length === 0) delete merged.events[ds];
+  });
+  return merged;
+}
+
 async function syncGAS() {
   const gasUrl = localStorage.getItem('ls_gasUrl');
   if (!gasUrl) return;
+  try {
+    const res = await fetch(gasUrl + '?action=getData');
+    if (res.ok) {
+      const gasData = await res.json();
+      if (gasData && gasData.absences) {
+        calData = mergeData(calData, gasData);
+        localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
+      }
+    }
+  } catch(e) {}
   try {
     await fetch(gasUrl, {
       method:'POST',
       body: JSON.stringify(calData),
       headers:{ 'Content-Type':'application/json' }
     });
-  } catch(e) { /* オフライン時は無視 */ }
+  } catch(e) {}
 }
 
 async function loadFromGAS() {
@@ -562,16 +594,12 @@ async function loadFromGAS() {
   try {
     const res = await fetch(gasUrl + '?action=getData');
     if (!res.ok) return;
-    const data = await res.json();
-    // GASに実際のデータがある場合のみ上書き（空データで消去しない）
-    const hasAbsences = data && data.absences &&
-      Object.values(data.absences).some(arr => Array.isArray(arr) && arr.length > 0);
-    const hasEvents = data && data.events && Object.keys(data.events).length > 0;
-    if (hasAbsences || hasEvents) {
-      calData = data;
+    const gasData = await res.json();
+    if (gasData && gasData.absences) {
+      calData = mergeData(calData, gasData);
       localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
     }
-  } catch(e) { /* オフライン時は無視 */ }
+  } catch(e) {}
 }
 
 async function syncFromGAS() {
