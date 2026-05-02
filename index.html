@@ -650,10 +650,13 @@ function pickMode(mode) {
 // カレンダー操作
 // ================================================================
 function onDayTap(ds) {
-  if (isPast(ds)) return;
   if (selMode==='yasumi') {
+    const arr = calData.absences[selEmp] || [];
+    const exists = arr.indexOf(ds) >= 0;
+    if (isPast(ds) && !exists) return; // 過去への新規追加は不可、削除はOK
     toggleAbsence(ds);
   } else {
+    if (isPast(ds)) return;
     const name = document.getElementById('ev-name').value.trim();
     if (!name) {
       showToast('イベント名を入力してください');
@@ -791,7 +794,7 @@ function renderMonth(cont, year, month) {
     if (past)       cls += ' dis';
 
     const cell = mkEl('div', cls);
-    if (!past) cell.onclick = () => onDayTap(ds);
+    cell.onclick = () => onDayTap(ds);
 
     // 日付番号
     const num = mkEl('div','day-n');
@@ -853,12 +856,14 @@ function renderStatsCard(cont, year, month) {
   t.textContent = `${year}年${MN[month-1]}　所定労働日 ${workdays}日`;
   card.appendChild(t);
 
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const recAbs = daysInMonth - workdays; // 推奨休み＝週末＋祝日の日数
+
   EMPS.forEach(emp => {
     const s = stats[emp.key];
-    let bcls;
-    if (s.absences>=2)       bcls='badge b-green';
-    else if (s.absences===1) bcls='badge b-yellow';
-    else                     bcls='badge b-red';
+    const remaining = Math.max(0, recAbs - s.absences);
+    const bcls = remaining === 0 ? 'badge b-green' : remaining === 1 ? 'badge b-yellow' : 'badge b-red';
+    const btext = remaining === 0 ? '推奨 ✓' : `あと${remaining}日`;
 
     const row = mkEl('div','stats-row');
     row.innerHTML = `
@@ -876,7 +881,7 @@ function renderStatsCard(cont, year, month) {
         <span class="stats-item-val">${s.present}</span>
         <span class="stats-item-unit">日</span>
       </span>
-      <span style="margin-left:auto"><span class="${bcls}">${s.absences>=2?'推奨 ✓':s.absences===1?'あと1日':'あと2日'}</span></span>`;
+      <span style="margin-left:auto"><span class="${bcls}">${btext}</span></span>`;
     card.appendChild(row);
   });
 
@@ -885,13 +890,13 @@ function renderStatsCard(cont, year, month) {
     <span class="rec-label">推奨：</span>
     <span class="stats-item">
       <span class="stats-item-label">休み</span>
-      <span class="stats-item-val" style="color:#6b7280">2</span>
+      <span class="stats-item-val" style="color:#6b7280">${recAbs}</span>
       <span class="stats-item-unit">日</span>
     </span>
     <span class="stats-sep">／</span>
     <span class="stats-item">
       <span class="stats-item-label">勤務</span>
-      <span class="stats-item-val" style="color:#6b7280">${workdays-2}</span>
+      <span class="stats-item-val" style="color:#6b7280">${workdays}</span>
       <span class="stats-item-unit">日</span>
     </span>`;
   card.appendChild(recRow);
