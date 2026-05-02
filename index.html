@@ -589,7 +589,7 @@ async function loadFromGAS() {
   const gasUrl = localStorage.getItem('ls_gasUrl');
   if (!gasUrl) return;
   try {
-    const res = await fetch(gasUrl + '?action=getData');
+    const res = await fetch(gasUrl + '?action=getData&t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) return;
     const gasData = await res.json();
     if (gasData && gasData.absences) {
