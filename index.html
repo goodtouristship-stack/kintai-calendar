@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>勤怠カレンダー | ツーリストシップ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #f3f4f6;
+      color: #1f2937;
+      min-height: 100vh;
+      padding-bottom: 48px;
+    }
+
+    .app-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: white;
+      padding: 14px 16px 10px;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .app-header h1 {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .app-header p {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    /* ── Sticky control panel ── */
+    .ctrl {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: white;
+      padding: 10px 14px;
+      border-bottom: 2px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ctrl-row + .ctrl-row { margin-top: 8px; }
+    .ctrl-label {
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 600;
+      min-width: 30px;
+    }
+    .btn-grp { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .btn-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      font-size: 13px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-pill:hover { background: #f9fafb; }
+    .btn-pill.sel-tanaka   { background:#3b82f6; border-color:#3b82f6; color:white; }
+    .btn-pill.sel-haruta   { background:#f97316; border-color:#f97316; color:white; }
+    .btn-pill.sel-kamizato { background:#10b981; border-color:#10b981; color:white; }
+    .btn-pill.sel-yasumi   { background:#ef4444; border-color:#ef4444; color:white; }
+    .btn-pill.sel-event    { background:#a855f7; border-color:#a855f7; color:white; }
+
+    .ev-input-wrap { flex: 1; }
+    .ev-input {
+      width: 100%;
+      padding: 6px 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Noto Sans JP', sans-serif;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .ev-input:focus { border-color: #a855f7; }
+
+    /* ── Calendar card ── */
+    .cal-section { padding: 14px 14px 0; }
+    .cal-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+    .cal-head {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .cal-title {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 6px;
+    }
+
+    /* Stats row inside calendar header */
+    .cal-stats { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cs-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px 2px 4px;
+      border-radius: 10px;
+      background: #f9fafb;
+    }
+    .cs-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .cs-rec-green  { color: #065f46; background: #d1fae5; }
+    .cs-rec-yellow { color: #92400e; background: #fef3c7; }
+    .cs-rec-red    { color: #991b1b; background: #fee2e2; }
+
+    /* Grid */
+    .cal-grid { padding: 6px 8px 10px; }
+    .wday-row {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      margin-bottom: 2px;
+    }
+    .wday-lbl {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 0;
+      color: #9ca3af;
+    }
+    .wday-lbl.sun { color: #ef4444; }
+    .wday-lbl.sat { color: #3b82f6; }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 2px;
+    }
+
+    .day-cell {
+      min-height: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3px 1px 2px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .1s;
+      overflow: hidden;
+    }
+    .day-cell:hover:not(.dis):not(.emp) { background: #f3f4f6; }
+    .day-cell.emp { cursor: default; }
+    .day-cell.dis { cursor: default; opacity: .3; }
+    .day-cell.todaycell { background: #eff6ff; }
+
+    .day-n {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #1f2937;
+    }
+    .day-cell.sun .day-n  { color: #ef4444; }
+    .day-cell.sat .day-n  { color: #3b82f6; }
+    .day-cell.hol .day-n  { color: #ef4444; }
+
+    .hol-name {
+      font-size: 6.5px;
+      color: #ef4444;
+      text-align: center;
+      max-width: 100%;
+      line-height: 1.1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .dots-row {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .ev-names {
+      font-size: 6.5px;
+      color: #7c3aed;
+      text-align: center;
+      width: 100%;
+      overflow: hidden;
+      line-height: 1.2;
+      margin-top: 1px;
+    }
+    .ev-name-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Stats section ── */
+    .stats-section { padding: 0 14px; }
+    .stats-card {
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      margin-bottom: 14px;
+    }
+    .stats-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      margin-bottom: 10px;
+      letter-spacing: .04em;
+    }
+    .stats-row {
+      display: flex;
+      align-items: center;
+      padding: 5px 0;
+      border-top: 1px solid #f3f4f6;
+      font-size: 13px;
+      gap: 0;
+    }
+    .stats-row:first-of-type { border-top: none; }
+    .stats-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      min-width: 52px;
+    }
+    .stats-sep {
+      color: #d1d5db;
+      margin: 0 4px;
+    }
+    .stats-item {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      min-width: 80px;
+    }
+    .stats-item-label {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    .stats-item-val {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .stats-item-unit {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .stats-row.rec-row {
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1.5px dashed #e5e7eb;
+    }
+    .rec-label {
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 600;
+      min-width: 52px;
+    }
+    .emp-dot8 {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .badge {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .b-green  { background: #d1fae5; color: #065f46; }
+    .b-yellow { background: #fef3c7; color: #92400e; }
+    .b-red    { background: #fee2e2; color: #991b1b; }
+
+    /* ── LINE settings ── */
+    .line-wrap {
+      margin: 0 14px 20px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .line-head {
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .line-head h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+    .arr {
+      font-size: 11px;
+      color: #9ca3af;
+      transition: transform .2s;
+    }
+    .arr.open { transform: rotate(180deg); }
+    .line-body {
+      display: none;
+      padding: 0 14px 14px;
+    }
+    .line-body.open { display: block; }
+    .fg { margin-bottom: 10px; }
+    .fg label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .fg input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Noto Sans JP', sans-serif;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .fg input:focus { border-color: #3b82f6; }
+    .btn-save {
+      width: 100%;
+      padding: 10px;
+      background: #1f2937;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background .15s;
+    }
+    .btn-save:hover { background: #374151; }
+    .btn-copy {
+      width: 100%;
+      padding: 10px;
+      background: #f3f4f6;
+      color: #374151;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background .15s;
+    }
+    .btn-copy:hover { background: #e5e7eb; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1f2937;
+      color: white;
+      padding: 9px 20px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      transition: transform .25s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width:360px) {
+      .day-n { font-size: 12px; }
+      .dot    { width: 4px; height: 4px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <!-- Header -->
+  <div class="app-header">
+    <h1>勤怠カレンダー</h1>
+    <p>一般社団法人ツーリストシップ</p>
+  </div>
+
+  <!-- Sticky control panel -->
+  <div class="ctrl">
+    <div class="ctrl-row">
+      <span class="ctrl-label">担当</span>
+      <div class="btn-grp" id="emp-btns">
+        <button class="btn-pill" data-emp="tanaka"   onclick="pickEmp('tanaka')">田中</button>
+        <button class="btn-pill" data-emp="haruta"   onclick="pickEmp('haruta')">春田</button>
+        <button class="btn-pill" data-emp="kamizato" onclick="pickEmp('kamizato')">上里</button>
+      </div>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">モード</span>
+      <div class="btn-grp" id="mode-btns">
+        <button class="btn-pill" data-mode="yasumi" onclick="pickMode('yasumi')">🏠 休み</button>
+        <button class="btn-pill" data-mode="event"  onclick="pickMode('event')">🎉 イベント</button>
+      </div>
+    </div>
+    <div class="ctrl-row" id="ev-row" style="display:none">
+      <span class="ctrl-label">名前</span>
+      <div class="ev-input-wrap">
+        <input type="text" class="ev-input" id="ev-name" placeholder="イベント名を入力">
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendars -->
+  <div class="cal-section" id="cal-container"></div>
+
+  <!-- Stats -->
+  <div class="stats-section" id="stats-container"></div>
+
+  <!-- LINE settings -->
+  <div class="line-wrap">
+    <div class="line-head" onclick="toggleLine()">
+      <h3>📱 LINE通知設定</h3>
+      <span class="arr" id="line-arr">▼</span>
+    </div>
+    <div class="line-body" id="line-body">
+      <div class="fg">
+        <label>GAS ウェブアプリURL</label>
+        <input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/...">
+      </div>
+      <div class="fg">
+        <label>LINE Channel Access Token</label>
+        <input type="text" id="line-token" placeholder="トークンを入力">
+      </div>
+      <div class="fg">
+        <label>LINE 通知先ID（グループ or ユーザー）</label>
+        <input type="text" id="line-to" placeholder="グループID または ユーザーID">
+      </div>
+      <button class="btn-save" onclick="saveLineSettings()">設定を保存</button>
+      <button class="btn-copy" onclick="copyGasCode()">📋 GASコードをコピー</button>
+    </div>
+  </div>
+
+</div><!-- /app-wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+// 定数
+// ================================================================
+const EMPS = [
+  { key:'tanaka',   name:'田中',   color:'#3b82f6' },
+  { key:'haruta',   name:'春田',   color:'#f97316' },
+  { key:'kamizato', name:'上里',   color:'#10b981' }
+];
+
+const HOLIDAYS = {
+  '2025-01-01':'元日',       '2025-01-13':'成人の日',
+  '2025-02-11':'建国記念日', '2025-02-23':'天皇誕生日',
+  '2025-02-24':'振替休日',   '2025-03-20':'春分の日',
+  '2025-04-29':'昭和の日',   '2025-05-03':'憲法記念日',
+  '2025-05-04':'みどりの日', '2025-05-05':'こどもの日',
+  '2025-05-06':'振替休日',   '2025-07-21':'海の日',
+  '2025-08-11':'山の日',     '2025-09-15':'敬老の日',
+  '2025-09-23':'秋分の日',   '2025-10-13':'スポーツの日',
+  '2025-11-03':'文化の日',   '2025-11-23':'勤労感謝の日',
+  '2025-11-24':'振替休日',
+  '2026-01-01':'元日',       '2026-01-12':'成人の日',
+  '2026-02-11':'建国記念日', '2026-02-23':'天皇誕生日',
+  '2026-03-20':'春分の日',   '2026-04-29':'昭和の日',
+  '2026-05-03':'憲法記念日', '2026-05-04':'みどりの日',
+  '2026-05-05':'こどもの日', '2026-07-20':'海の日',
+  '2026-08-11':'山の日',     '2026-09-21':'敬老の日',
+  '2026-09-23':'秋分の日',   '2026-10-12':'スポーツの日',
+  '2026-11-03':'文化の日',   '2026-11-23':'勤労感謝の日'
+};
+
+// ================================================================
+// 状態
+// ================================================================
+let selEmp  = 'tanaka';
+let selMode = 'yasumi';
+let calData = loadData();
+
+const todayDate = new Date();
+todayDate.setHours(0,0,0,0);
+const todayStr  = toDateStr(todayDate);
+
+// ================================================================
+// データ永続化
+// ================================================================
+function loadData() {
+  try {
+    const s = localStorage.getItem('ts_cal_v2');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return { absences:{ tanaka:[], haruta:[], kamizato:[] }, events:{} };
+}
+
+function saveData() {
+  localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
+  syncGAS();
+}
+
+async function syncGAS() {
+  const gasUrl = localStorage.getItem('ls_gasUrl');
+  if (!gasUrl) return;
+  try {
+    await fetch(gasUrl, {
+      method:'POST',
+      body: JSON.stringify(calData),
+      headers:{ 'Content-Type':'application/json' }
+    });
+  } catch(e) { /* オフライン時は無視 */ }
+}
+
+// ================================================================
+// ユーティリティ
+// ================================================================
+function toDateStr(d) {
+  const y  = d.getFullYear();
+  const m  = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+function isHoliday(ds) { return !!HOLIDAYS[ds]; }
+
+function isWorkday(ds) {
+  const d = new Date(ds+'T00:00:00');
+  const w = d.getDay();
+  return w!==0 && w!==6 && !isHoliday(ds);
+}
+
+function isPast(ds) {
+  return new Date(ds+'T00:00:00') < todayDate;
+}
+
+// ================================================================
+// UI：担当・モード選択
+// ================================================================
+function pickEmp(key) {
+  selEmp = key;
+  document.querySelectorAll('#emp-btns .btn-pill').forEach(b => {
+    b.className = 'btn-pill' + (b.dataset.emp===key ? ` sel-${key}` : '');
+  });
+}
+
+function pickMode(mode) {
+  selMode = mode;
+  document.querySelectorAll('#mode-btns .btn-pill').forEach(b => {
+    b.className = 'btn-pill' + (b.dataset.mode===mode ? ` sel-${mode}` : '');
+  });
+  document.getElementById('ev-row').style.display = mode==='event' ? 'flex' : 'none';
+}
+
+// ================================================================
+// カレンダー操作
+// ================================================================
+function onDayTap(ds) {
+  if (isPast(ds)) return;
+  if (selMode==='yasumi') {
+    toggleAbsence(ds);
+  } else {
+    const name = document.getElementById('ev-name').value.trim();
+    if (!name) {
+      showToast('イベント名を入力してください');
+      document.getElementById('ev-name').focus();
+      return;
+    }
+    toggleEvent(ds, name);
+  }
+}
+
+function toggleAbsence(ds) {
+  if (!calData.absences[selEmp]) calData.absences[selEmp] = [];
+  const arr = calData.absences[selEmp];
+  const i   = arr.indexOf(ds);
+  const emp = EMPS.find(e=>e.key===selEmp);
+  if (i>=0) {
+    arr.splice(i,1);
+    showToast(`${emp.name} の休みを解除しました`);
+  } else {
+    arr.push(ds);
+    showToast(`${emp.name} の休みを登録しました`);
+  }
+  saveData();
+  renderAll();
+}
+
+function toggleEvent(ds, name) {
+  if (!calData.events[ds]) calData.events[ds] = [];
+  const i = calData.events[ds].findIndex(ev => ev.name===name && ev.emp===selEmp);
+  if (i>=0) {
+    calData.events[ds].splice(i,1);
+    if (!calData.events[ds].length) delete calData.events[ds];
+    showToast(`「${name}」を削除しました`);
+  } else {
+    calData.events[ds].push({ name, emp: selEmp });
+    showToast(`「${name}」を登録しました`);
+  }
+  saveData();
+  renderAll();
+}
+
+// ================================================================
+// 勤務統計
+// ================================================================
+function calcStats(year, month) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let workdays = 0;
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (isWorkday(ds)) workdays++;
+  }
+  const stats = {};
+  EMPS.forEach(emp => {
+    const absCount = (calData.absences[emp.key]||[]).filter(ds => {
+      const d = new Date(ds+'T00:00:00');
+      return d.getFullYear()===year && (d.getMonth()+1)===month;
+    }).length;
+    // 勤務 = 月の総日数 − 休み登録日数
+    stats[emp.key] = { workdays, absences:absCount, present:daysInMonth-absCount };
+  });
+  return { workdays, stats };
+}
+
+// ================================================================
+// レンダリング
+// ================================================================
+function renderAll() {
+  const now = new Date();
+  const y1  = now.getFullYear();
+  const m1  = now.getMonth()+1;
+  const m2r = m1+1;
+  const y2  = m2r>12 ? y1+1 : y1;
+  const m2  = m2r>12 ? 1    : m2r;
+
+  const cont = document.getElementById('cal-container');
+  cont.innerHTML = '';
+  document.getElementById('stats-container').innerHTML = '';
+
+  // 今月：名前表 → カレンダー
+  renderStatsCard(cont, y1, m1);
+  renderMonth(cont, y1, m1);
+
+  // 来月：名前表 → カレンダー
+  renderStatsCard(cont, y2, m2);
+  renderMonth(cont, y2, m2);
+}
+
+function mkEl(tag, cls) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  return e;
+}
+
+function renderMonth(cont, year, month) {
+  const MN = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+  const card = mkEl('div','cal-card');
+
+  // ─ head（タイトルのみ）─
+  const head = mkEl('div','cal-head');
+  const title = mkEl('div','cal-title');
+  title.textContent = `${year}年${MN[month-1]}`;
+  head.appendChild(title);
+  card.appendChild(head);
+
+  // ─ grid ─
+  const grid = mkEl('div','cal-grid');
+
+  const wrow = mkEl('div','wday-row');
+  ['日','月','火','水','木','金','土'].forEach((w,i)=>{
+    const lbl = mkEl('div','wday-lbl'+(i===0?' sun':i===6?' sat':''));
+    lbl.textContent = w;
+    wrow.appendChild(lbl);
+  });
+  grid.appendChild(wrow);
+
+  const dgrid = mkEl('div','days-grid');
+  const firstDow = new Date(year, month-1, 1).getDay();
+  const daysInM  = new Date(year, month, 0).getDate();
+
+  for (let i=0; i<firstDow; i++) dgrid.appendChild(mkEl('div','day-cell emp'));
+
+  for (let d=1; d<=daysInM; d++) {
+    const ds      = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cellDate = new Date(year, month-1, d);
+    const dow      = cellDate.getDay();
+    const past     = isPast(ds);
+    const holName  = HOLIDAYS[ds];
+
+    let cls = 'day-cell';
+    if (dow===0)    cls += ' sun';
+    else if (dow===6) cls += ' sat';
+    if (holName)    cls += ' hol';
+    if (ds===todayStr) cls += ' todaycell';
+    if (past)       cls += ' dis';
+
+    const cell = mkEl('div', cls);
+    if (!past) cell.onclick = () => onDayTap(ds);
+
+    // 日付番号
+    const num = mkEl('div','day-n');
+    num.textContent = d;
+    cell.appendChild(num);
+
+    // 祝日名
+    if (holName) {
+      const hn = mkEl('div','hol-name');
+      hn.textContent = holName;
+      cell.appendChild(hn);
+    }
+
+    // ドット
+    const dotsRow = mkEl('div','dots-row');
+    EMPS.forEach(emp => {
+      if ((calData.absences[emp.key]||[]).includes(ds)) {
+        const dot = mkEl('span','dot');
+        dot.style.background = emp.color;
+        dotsRow.appendChild(dot);
+      }
+    });
+    const evs = calData.events[ds]||[];
+    evs.forEach(ev => {
+      const empColor = (EMPS.find(e=>e.key===ev.emp)||{color:'#a855f7'}).color;
+      const dot = mkEl('span','dot');
+      dot.style.background = empColor;
+      dotsRow.appendChild(dot);
+    });
+    if (dotsRow.children.length) cell.appendChild(dotsRow);
+
+    // イベント名
+    if (evs.length) {
+      const evNms = mkEl('div','ev-names');
+      evs.forEach(ev => {
+        const empColor = (EMPS.find(e=>e.key===ev.emp)||{color:'#a855f7'}).color;
+        const ln = mkEl('div','ev-name-line');
+        ln.style.color = empColor;
+        ln.textContent = ev.name;
+        evNms.appendChild(ln);
+      });
+      cell.appendChild(evNms);
+    }
+
+    dgrid.appendChild(cell);
+  }
+
+  grid.appendChild(dgrid);
+  card.appendChild(grid);
+  cont.appendChild(card);
+}
+
+function renderStatsCard(cont, year, month) {
+  const MN = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const { workdays, stats } = calcStats(year, month);
+  const card = mkEl('div','stats-card');
+
+  const t = mkEl('div','stats-card-title');
+  t.textContent = `${year}年${MN[month-1]}　所定労働日 ${workdays}日`;
+  card.appendChild(t);
+
+  EMPS.forEach(emp => {
+    const s = stats[emp.key];
+    let bcls;
+    if (s.absences>=2)       bcls='badge b-green';
+    else if (s.absences===1) bcls='badge b-yellow';
+    else                     bcls='badge b-red';
+
+    const row = mkEl('div','stats-row');
+    row.innerHTML = `
+      <span class="stats-name">
+        <span class="emp-dot8" style="background:${emp.color}"></span>${emp.name}：
+      </span>
+      <span class="stats-item">
+        <span class="stats-item-label">休み</span>
+        <span class="stats-item-val">${s.absences}</span>
+        <span class="stats-item-unit">日</span>
+      </span>
+      <span class="stats-sep">／</span>
+      <span class="stats-item">
+        <span class="stats-item-label">勤務</span>
+        <span class="stats-item-val">${s.present}</span>
+        <span class="stats-item-unit">日</span>
+      </span>
+      <span style="margin-left:auto"><span class="${bcls}">${s.absences>=2?'推奨 ✓':s.absences===1?'あと1日':'あと2日'}</span></span>`;
+    card.appendChild(row);
+  });
+
+  const recRow = mkEl('div','stats-row rec-row');
+  recRow.innerHTML = `
+    <span class="rec-label">推奨：</span>
+    <span class="stats-item">
+      <span class="stats-item-label">休み</span>
+      <span class="stats-item-val" style="color:#6b7280">2</span>
+      <span class="stats-item-unit">日</span>
+    </span>
+    <span class="stats-sep">／</span>
+    <span class="stats-item">
+      <span class="stats-item-label">勤務</span>
+      <span class="stats-item-val" style="color:#6b7280">${workdays-2}</span>
+      <span class="stats-item-unit">日</span>
+    </span>`;
+  card.appendChild(recRow);
+
+  cont.appendChild(card);
+}
+
+// ================================================================
+// LINE設定
+// ================================================================
+function toggleLine() {
+  document.getElementById('line-body').classList.toggle('open');
+  document.getElementById('line-arr').classList.toggle('open');
+}
+
+function saveLineSettings() {
+  localStorage.setItem('ls_gasUrl',    document.getElementById('gas-url').value.trim());
+  localStorage.setItem('ls_lineToken', document.getElementById('line-token').value.trim());
+  localStorage.setItem('ls_lineTo',    document.getElementById('line-to').value.trim());
+  showToast('設定を保存しました');
+}
+
+function loadLineSettings() {
+  document.getElementById('gas-url').value    = localStorage.getItem('ls_gasUrl')    || '';
+  document.getElementById('line-token').value = localStorage.getItem('ls_lineToken') || '';
+  document.getElementById('line-to').value    = localStorage.getItem('ls_lineTo')    || '';
+}
+
+function copyGasCode() {
+  // gas.js の内容と同期（手動コピー用）
+  const code = `// ================================================================
+// 勤怠カレンダー LINE通知  -  Google Apps Script
+// ================================================================
+// ▼ この2行に値を入力して保存してください
+const LINE_TOKEN = 'ここに入力';
+const LINE_TO    = 'ここに入力';
+
+const EMPLOYEES = [
+  { key:'tanaka',   name:'田中' },
+  { key:'haruta',   name:'春田' },
+  { key:'kamizato', name:'上里' }
+];
+
+// カレンダーページからPOSTされたデータを受け取りスクリプトプロパティに保存
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    PropertiesService.getScriptProperties()
+      .setProperty('calData', JSON.stringify(data));
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// 毎朝6時トリガーで実行 → 今日の予定をLINEに通知
+function sendDailyNotification() {
+  var raw = PropertiesService.getScriptProperties().getProperty('calData');
+  if (!raw) { Logger.log('データなし'); return; }
+
+  var calData = JSON.parse(raw);
+  var today   = new Date();
+  var month   = today.getMonth() + 1;
+  var day     = today.getDate();
+  var year    = today.getFullYear();
+  var m2      = month < 10 ? '0' + month : '' + month;
+  var d2      = day   < 10 ? '0' + day   : '' + day;
+  var dateStr = year + '-' + m2 + '-' + d2;
+  var wdays   = ['日','月','火','水','木','金','土'];
+  var wday    = wdays[today.getDay()];
+
+  var absences    = calData.absences || {};
+  var events      = calData.events   || {};
+  var presentList = [];
+  var absentList  = [];
+
+  EMPLOYEES.forEach(function(emp) {
+    var list = absences[emp.key] || [];
+    if (list.indexOf(dateStr) >= 0) {
+      absentList.push(emp.name);
+    } else {
+      presentList.push(emp.name);
+    }
+  });
+
+  var todayEvents = events[dateStr] || [];
+
+  var msg = '📅 ' + month + '月' + day + '日（' + wday + '）の予定\\n';
+  msg += '✅ 出勤: ' + (presentList.length ? presentList.join('、') : 'なし') + '\\n';
+  msg += '🏠 休み: ' + (absentList.length ? absentList.join('、') : 'なし');
+  if (todayEvents.length) {
+    msg += '\\n🎉 イベント:';
+    todayEvents.forEach(function(ev) { msg += '\\n  · ' + (ev.name || ev); });
+  }
+
+  var options = {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + LINE_TOKEN
+    },
+    payload: JSON.stringify({
+      to: LINE_TO,
+      messages: [{ type: 'text', text: msg }]
+    }),
+    muteHttpExceptions: true
+  };
+  var res = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
+  Logger.log('LINE: ' + res.getContentText());
+}`;
+
+  navigator.clipboard.writeText(code).then(() => {
+    showToast('GASコードをコピーしました');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('GASコードをコピーしました');
+  });
+}
+
+// ================================================================
+// Toast
+// ================================================================
+let _tt = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ================================================================
+// 初期化
+// ================================================================
+pickEmp('tanaka');
+pickMode('yasumi');
+loadLineSettings();
+renderAll();
+</script>
+</body>
+</html>
