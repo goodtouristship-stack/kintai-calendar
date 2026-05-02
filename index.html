@@ -580,11 +580,8 @@ async function syncGAS() {
     }
   } catch(e) {}
   try {
-    await fetch(gasUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(calData)
-    });
+    const dataParam = encodeURIComponent(JSON.stringify(calData));
+    await fetch(gasUrl + '?action=setData&data=' + dataParam);
   } catch(e) {}
 }
 
