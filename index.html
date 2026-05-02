@@ -544,41 +544,10 @@ function saveData() {
   syncGAS();
 }
 
-function mergeData(local, gas) {
-  const merged = { absences: {}, events: {} };
-  ['tanaka','haruta','kamizato'].forEach(key => {
-    const a = (local.absences && local.absences[key]) || [];
-    const b = (gas.absences   && gas.absences[key])   || [];
-    merged.absences[key] = [...new Set([...a, ...b])].sort();
-  });
-  const allDates = new Set([...Object.keys(local.events||{}), ...Object.keys(gas.events||{})]);
-  allDates.forEach(ds => {
-    const a = (local.events && local.events[ds]) || [];
-    const b = (gas.events   && gas.events[ds])   || [];
-    const all = [...a, ...b];
-    merged.events[ds] = all.filter((ev, i) => {
-      const n = typeof ev==='string' ? ev : ev.name;
-      const p = typeof ev==='object' ? ev.emp : null;
-      return all.findIndex(e => (typeof e==='string'?e:e.name)===n && (typeof e==='object'?e.emp:null)===p) === i;
-    });
-    if (merged.events[ds].length === 0) delete merged.events[ds];
-  });
-  return merged;
-}
-
 async function syncGAS() {
+  // ローカルの最新データをそのままGASに書き込む（削除も反映）
   const gasUrl = localStorage.getItem('ls_gasUrl');
   if (!gasUrl) return;
-  try {
-    const res = await fetch(gasUrl + '?action=getData');
-    if (res.ok) {
-      const gasData = await res.json();
-      if (gasData && gasData.absences) {
-        calData = mergeData(calData, gasData);
-        localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
-      }
-    }
-  } catch(e) {}
   try {
     const dataParam = encodeURIComponent(JSON.stringify(calData));
     await fetch(gasUrl + '?action=setData&data=' + dataParam);
@@ -586,14 +555,18 @@ async function syncGAS() {
 }
 
 async function loadFromGAS() {
+  // GASのデータをそのままローカルに反映（合算しない）
   const gasUrl = localStorage.getItem('ls_gasUrl');
   if (!gasUrl) return;
   try {
     const res = await fetch(gasUrl + '?action=getData&t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) return;
     const gasData = await res.json();
-    if (gasData && gasData.absences) {
-      calData = mergeData(calData, gasData);
+    const hasData = gasData && gasData.absences &&
+      (Object.values(gasData.absences).some(arr => arr.length > 0) ||
+       Object.keys(gasData.events || {}).length > 0);
+    if (hasData) {
+      calData = gasData;
       localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
     }
   } catch(e) {}
