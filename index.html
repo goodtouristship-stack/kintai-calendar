@@ -563,7 +563,11 @@ async function loadFromGAS() {
     const res = await fetch(gasUrl + '?action=getData');
     if (!res.ok) return;
     const data = await res.json();
-    if (data && (data.absences || data.events)) {
+    // GASに実際のデータがある場合のみ上書き（空データで消去しない）
+    const hasAbsences = data && data.absences &&
+      Object.values(data.absences).some(arr => Array.isArray(arr) && arr.length > 0);
+    const hasEvents = data && data.events && Object.keys(data.events).length > 0;
+    if (hasAbsences || hasEvents) {
       calData = data;
       localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
     }
