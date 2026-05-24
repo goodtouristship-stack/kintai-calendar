@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Noto Sans JP', sans-serif;
       background: #f3f4f6;
@@ -16,12 +15,10 @@
       min-height: 100vh;
       padding-bottom: 48px;
     }
-
     .app-wrap {
       max-width: 480px;
       margin: 0 auto;
     }
-
     /* ── Header ── */
     .app-header {
       background: white;
@@ -39,7 +36,6 @@
       color: #9ca3af;
       margin-top: 2px;
     }
-
     /* ── Sticky control panel ── */
     .ctrl {
       position: sticky;
@@ -63,7 +59,6 @@
       min-width: 30px;
     }
     .btn-grp { display: flex; gap: 6px; flex-wrap: wrap; }
-
     .btn-pill {
       padding: 5px 14px;
       border-radius: 20px;
@@ -82,7 +77,6 @@
     .btn-pill.sel-kamizato { background:#10b981; border-color:#10b981; color:white; }
     .btn-pill.sel-yasumi   { background:#ef4444; border-color:#ef4444; color:white; }
     .btn-pill.sel-event    { background:#a855f7; border-color:#a855f7; color:white; }
-
     .ev-input-wrap { flex: 1; }
     .ev-input {
       width: 100%;
@@ -95,7 +89,6 @@
       transition: border-color .15s;
     }
     .ev-input:focus { border-color: #a855f7; }
-
     /* ── Calendar card ── */
     .cal-section { padding: 14px 14px 0; }
     .cal-card {
@@ -116,7 +109,6 @@
       color: #1f2937;
       margin-bottom: 6px;
     }
-
     /* Stats row inside calendar header */
     .cal-stats { display: flex; gap: 6px; flex-wrap: wrap; }
     .cs-item {
@@ -137,7 +129,6 @@
     .cs-rec-green  { color: #065f46; background: #d1fae5; }
     .cs-rec-yellow { color: #92400e; background: #fef3c7; }
     .cs-rec-red    { color: #991b1b; background: #fee2e2; }
-
     /* Grid */
     .cal-grid { padding: 6px 8px 10px; }
     .wday-row {
@@ -154,13 +145,11 @@
     }
     .wday-lbl.sun { color: #ef4444; }
     .wday-lbl.sat { color: #3b82f6; }
-
     .days-grid {
       display: grid;
       grid-template-columns: repeat(7,1fr);
       gap: 2px;
     }
-
     .day-cell {
       min-height: 50px;
       display: flex;
@@ -176,7 +165,6 @@
     .day-cell.emp { cursor: default; }
     .day-cell.dis { cursor: default; opacity: .3; }
     .day-cell.todaycell { background: #eff6ff; }
-
     .day-n {
       font-size: 13px;
       font-weight: 600;
@@ -186,7 +174,6 @@
     .day-cell.sun .day-n  { color: #ef4444; }
     .day-cell.sat .day-n  { color: #3b82f6; }
     .day-cell.hol .day-n  { color: #ef4444; }
-
     .hol-name {
       font-size: 6.5px;
       color: #ef4444;
@@ -197,7 +184,6 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
-
     .dots-row {
       display: flex;
       gap: 2px;
@@ -210,7 +196,6 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-
     .ev-names {
       font-size: 6.5px;
       color: #7c3aed;
@@ -225,7 +210,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     /* ── Stats section ── */
     .stats-section { padding: 0 14px; }
     .stats-card {
@@ -308,7 +292,6 @@
     .b-green  { background: #d1fae5; color: #065f46; }
     .b-yellow { background: #fef3c7; color: #92400e; }
     .b-red    { background: #fee2e2; color: #991b1b; }
-
     /* ── LINE settings ── */
     .line-wrap {
       margin: 0 14px 20px;
@@ -390,7 +373,6 @@
       transition: background .15s;
     }
     .btn-copy:hover { background: #e5e7eb; }
-
     /* ── Toast ── */
     .toast {
       position: fixed;
@@ -410,7 +392,6 @@
       pointer-events: none;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-
     @media (max-width:360px) {
       .day-n { font-size: 12px; }
       .dot    { width: 4px; height: 4px; }
@@ -419,14 +400,12 @@
 </head>
 <body>
 <div class="app-wrap">
-
   <!-- Header -->
   <div class="app-header">
     <h1>勤怠カレンダー</h1>
     <p>一般社団法人ツーリストシップ</p>
     <button onclick="syncFromGAS()" style="margin-top:6px;font-size:11px;padding:4px 12px;border:1px solid #d1d5db;border-radius:20px;background:white;color:#6b7280;cursor:pointer;">🔄 データを同期</button>
   </div>
-
   <!-- Sticky control panel -->
   <div class="ctrl">
     <div class="ctrl-row">
@@ -451,13 +430,10 @@
       </div>
     </div>
   </div>
-
   <!-- Calendars -->
   <div class="cal-section" id="cal-container"></div>
-
   <!-- Stats -->
   <div class="stats-section" id="stats-container"></div>
-
   <!-- LINE settings -->
   <div class="line-wrap">
     <div class="line-head" onclick="toggleLine()">
@@ -481,11 +457,8 @@
       <button class="btn-copy" onclick="copyGasCode()">📋 GASコードをコピー</button>
     </div>
   </div>
-
 </div><!-- /app-wrap -->
-
 <div class="toast" id="toast"></div>
-
 <script>
 // ================================================================
 // 定数
@@ -495,7 +468,6 @@ const EMPS = [
   { key:'haruta',   name:'春田',   color:'#f97316' },
   { key:'kamizato', name:'上里',   color:'#10b981' }
 ];
-
 const HOLIDAYS = {
   '2025-01-01':'元日',       '2025-01-13':'成人の日',
   '2025-02-11':'建国記念日', '2025-02-23':'天皇誕生日',
@@ -516,18 +488,15 @@ const HOLIDAYS = {
   '2026-09-23':'秋分の日',   '2026-10-12':'スポーツの日',
   '2026-11-03':'文化の日',   '2026-11-23':'勤労感謝の日'
 };
-
 // ================================================================
 // 状態
 // ================================================================
 let selEmp  = 'tanaka';
 let selMode = 'yasumi';
 let calData = loadData();
-
 const todayDate = new Date();
 todayDate.setHours(0,0,0,0);
 const todayStr  = toDateStr(todayDate);
-
 // ================================================================
 // データ永続化
 // ================================================================
@@ -538,28 +507,41 @@ function loadData() {
   } catch(e) {}
   return { absences:{ tanaka:[], haruta:[], kamizato:[] }, events:{} };
 }
-
 function saveData() {
   localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
   syncGAS();
 }
 
+// ================================================================
+// GAS同期（修正版）
+// ================================================================
+
+// ローカルデータをGASのスプレッドシートに保存（POST）
 async function syncGAS() {
-  // ローカルの最新データをそのままGASに書き込む（削除も反映）
   const gasUrl = localStorage.getItem('ls_gasUrl');
   if (!gasUrl) return;
   try {
-    const dataParam = encodeURIComponent(JSON.stringify(calData));
-    await fetch(gasUrl + '?action=setData&data=' + dataParam);
-  } catch(e) {}
+    await fetch(gasUrl, {
+      method: 'POST',
+      mode: 'no-cors',  // CORSエラーを回避（レスポンスは読まない）
+      body: JSON.stringify(calData)
+    });
+  } catch(e) {
+    console.warn('GAS書き込みエラー:', e);
+  }
 }
 
+// GASのスプレッドシートからデータを読み込む（GET）
 async function loadFromGAS() {
-  // GASのデータをそのままローカルに反映（合算しない）
   const gasUrl = localStorage.getItem('ls_gasUrl');
   if (!gasUrl) return;
   try {
-    const res = await fetch(gasUrl + '?action=getData&t=' + Date.now(), { cache: 'no-store' });
+    const res = await fetch(gasUrl + '?action=getData&t=' + Date.now(), {
+      method: 'GET',
+      cache: 'no-store',
+      redirect: 'follow',
+      credentials: 'omit'
+    });
     if (!res.ok) return;
     const gasData = await res.json();
     const hasData = gasData && gasData.absences &&
@@ -569,14 +551,16 @@ async function loadFromGAS() {
       calData = gasData;
       localStorage.setItem('ts_cal_v2', JSON.stringify(calData));
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn('GAS読み込みエラー:', e);
+  }
 }
 
 async function syncFromGAS() {
   showToast('データを同期中…');
   await loadFromGAS();
   renderAll();
-  showToast('同期しました');
+  showToast('同期しました ✓');
 }
 
 // ================================================================
@@ -588,19 +572,15 @@ function toDateStr(d) {
   const dd = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${dd}`;
 }
-
 function isHoliday(ds) { return !!HOLIDAYS[ds]; }
-
 function isWorkday(ds) {
   const d = new Date(ds+'T00:00:00');
   const w = d.getDay();
   return w!==0 && w!==6 && !isHoliday(ds);
 }
-
 function isPast(ds) {
   return new Date(ds+'T00:00:00') < todayDate;
 }
-
 // ================================================================
 // UI：担当・モード選択
 // ================================================================
@@ -610,7 +590,6 @@ function pickEmp(key) {
     b.className = 'btn-pill' + (b.dataset.emp===key ? ` sel-${key}` : '');
   });
 }
-
 function pickMode(mode) {
   selMode = mode;
   document.querySelectorAll('#mode-btns .btn-pill').forEach(b => {
@@ -618,7 +597,6 @@ function pickMode(mode) {
   });
   document.getElementById('ev-row').style.display = mode==='event' ? 'flex' : 'none';
 }
-
 // ================================================================
 // カレンダー操作
 // ================================================================
@@ -626,7 +604,7 @@ function onDayTap(ds) {
   if (selMode==='yasumi') {
     const arr = calData.absences[selEmp] || [];
     const exists = arr.indexOf(ds) >= 0;
-    if (isPast(ds) && !exists) return; // 過去への新規追加は不可、削除はOK
+    if (isPast(ds) && !exists) return;
     toggleAbsence(ds);
   } else {
     if (isPast(ds)) return;
@@ -639,7 +617,6 @@ function onDayTap(ds) {
     toggleEvent(ds, name);
   }
 }
-
 function toggleAbsence(ds) {
   if (!calData.absences[selEmp]) calData.absences[selEmp] = [];
   const arr = calData.absences[selEmp];
@@ -655,7 +632,6 @@ function toggleAbsence(ds) {
   saveData();
   renderAll();
 }
-
 function toggleEvent(ds, name) {
   if (!calData.events[ds]) calData.events[ds] = [];
   const i = calData.events[ds].findIndex(ev => ev.name===name && ev.emp===selEmp);
@@ -670,7 +646,6 @@ function toggleEvent(ds, name) {
   saveData();
   renderAll();
 }
-
 // ================================================================
 // 勤務統計
 // ================================================================
@@ -687,12 +662,10 @@ function calcStats(year, month) {
       const d = new Date(ds+'T00:00:00');
       return d.getFullYear()===year && (d.getMonth()+1)===month;
     }).length;
-    // 勤務 = 月の総日数 − 休み登録日数
     stats[emp.key] = { workdays, absences:absCount, present:daysInMonth-absCount };
   });
   return { workdays, stats };
 }
-
 // ================================================================
 // レンダリング
 // ================================================================
@@ -703,41 +676,28 @@ function renderAll() {
   const m2r = m1+1;
   const y2  = m2r>12 ? y1+1 : y1;
   const m2  = m2r>12 ? 1    : m2r;
-
   const cont = document.getElementById('cal-container');
   cont.innerHTML = '';
   document.getElementById('stats-container').innerHTML = '';
-
-  // 今月：名前表 → カレンダー
   renderStatsCard(cont, y1, m1);
   renderMonth(cont, y1, m1);
-
-  // 来月：名前表 → カレンダー
   renderStatsCard(cont, y2, m2);
   renderMonth(cont, y2, m2);
 }
-
 function mkEl(tag, cls) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
   return e;
 }
-
 function renderMonth(cont, year, month) {
   const MN = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-
   const card = mkEl('div','cal-card');
-
-  // ─ head（タイトルのみ）─
   const head = mkEl('div','cal-head');
   const title = mkEl('div','cal-title');
   title.textContent = `${year}年${MN[month-1]}`;
   head.appendChild(title);
   card.appendChild(head);
-
-  // ─ grid ─
   const grid = mkEl('div','cal-grid');
-
   const wrow = mkEl('div','wday-row');
   ['日','月','火','水','木','金','土'].forEach((w,i)=>{
     const lbl = mkEl('div','wday-lbl'+(i===0?' sun':i===6?' sat':''));
@@ -745,43 +705,32 @@ function renderMonth(cont, year, month) {
     wrow.appendChild(lbl);
   });
   grid.appendChild(wrow);
-
   const dgrid = mkEl('div','days-grid');
   const firstDow = new Date(year, month-1, 1).getDay();
   const daysInM  = new Date(year, month, 0).getDate();
-
   for (let i=0; i<firstDow; i++) dgrid.appendChild(mkEl('div','day-cell emp'));
-
   for (let d=1; d<=daysInM; d++) {
     const ds      = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const cellDate = new Date(year, month-1, d);
     const dow      = cellDate.getDay();
     const past     = isPast(ds);
     const holName  = HOLIDAYS[ds];
-
     let cls = 'day-cell';
     if (dow===0)    cls += ' sun';
     else if (dow===6) cls += ' sat';
     if (holName)    cls += ' hol';
     if (ds===todayStr) cls += ' todaycell';
     if (past)       cls += ' dis';
-
     const cell = mkEl('div', cls);
     cell.onclick = () => onDayTap(ds);
-
-    // 日付番号
     const num = mkEl('div','day-n');
     num.textContent = d;
     cell.appendChild(num);
-
-    // 祝日名
     if (holName) {
       const hn = mkEl('div','hol-name');
       hn.textContent = holName;
       cell.appendChild(hn);
     }
-
-    // ドット
     const dotsRow = mkEl('div','dots-row');
     EMPS.forEach(emp => {
       if ((calData.absences[emp.key]||[]).includes(ds)) {
@@ -798,8 +747,6 @@ function renderMonth(cont, year, month) {
       dotsRow.appendChild(dot);
     });
     if (dotsRow.children.length) cell.appendChild(dotsRow);
-
-    // イベント名
     if (evs.length) {
       const evNms = mkEl('div','ev-names');
       evs.forEach(ev => {
@@ -811,33 +758,26 @@ function renderMonth(cont, year, month) {
       });
       cell.appendChild(evNms);
     }
-
     dgrid.appendChild(cell);
   }
-
   grid.appendChild(dgrid);
   card.appendChild(grid);
   cont.appendChild(card);
 }
-
 function renderStatsCard(cont, year, month) {
   const MN = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   const { workdays, stats } = calcStats(year, month);
   const card = mkEl('div','stats-card');
-
   const t = mkEl('div','stats-card-title');
   t.textContent = `${year}年${MN[month-1]}　所定労働日 ${workdays}日`;
   card.appendChild(t);
-
   const daysInMonth = new Date(year, month, 0).getDate();
-  const recAbs = daysInMonth - workdays; // 推奨休み＝週末＋祝日の日数
-
+  const recAbs = daysInMonth - workdays;
   EMPS.forEach(emp => {
     const s = stats[emp.key];
     const remaining = Math.max(0, recAbs - s.absences);
     const bcls = remaining === 0 ? 'badge b-green' : remaining === 1 ? 'badge b-yellow' : 'badge b-red';
     const btext = remaining === 0 ? '推奨 ✓' : `あと${remaining}日`;
-
     const row = mkEl('div','stats-row');
     row.innerHTML = `
       <span class="stats-name">
@@ -857,7 +797,6 @@ function renderStatsCard(cont, year, month) {
       <span style="margin-left:auto"><span class="${bcls}">${btext}</span></span>`;
     card.appendChild(row);
   });
-
   const recRow = mkEl('div','stats-row rec-row');
   recRow.innerHTML = `
     <span class="rec-label">推奨：</span>
@@ -873,10 +812,8 @@ function renderStatsCard(cont, year, month) {
       <span class="stats-item-unit">日</span>
     </span>`;
   card.appendChild(recRow);
-
   cont.appendChild(card);
 }
-
 // ================================================================
 // LINE設定
 // ================================================================
@@ -884,26 +821,27 @@ function toggleLine() {
   document.getElementById('line-body').classList.toggle('open');
   document.getElementById('line-arr').classList.toggle('open');
 }
-
 function saveLineSettings() {
   localStorage.setItem('ls_gasUrl',    document.getElementById('gas-url').value.trim());
   localStorage.setItem('ls_lineToken', document.getElementById('line-token').value.trim());
   localStorage.setItem('ls_lineTo',    document.getElementById('line-to').value.trim());
   showToast('設定を保存しました');
 }
-
 function loadLineSettings() {
   document.getElementById('gas-url').value    = localStorage.getItem('ls_gasUrl')    || '';
   document.getElementById('line-token').value = localStorage.getItem('ls_lineToken') || '';
   document.getElementById('line-to').value    = localStorage.getItem('ls_lineTo')    || '';
 }
 
-function copyGasCode() {
-  // gas.js の内容と同期（手動コピー用）
-  const code = `// ================================================================
-// 勤怠カレンダー LINE通知  -  Google Apps Script
 // ================================================================
-// ▼ この2行に値を入力して保存してください
+// GASコードのコピー（スプレッドシート対応版）
+// ================================================================
+function copyGasCode() {
+  const code = `// ================================================================
+// 勤怠カレンダー - Google Apps Script（スプレッドシート対応版）
+// Googleスプレッドシートにデータを保存 + LINE通知
+// ================================================================
+// ▼ LINE通知を使う場合は以下2行に値を入力してください
 const LINE_TOKEN = 'ここに入力';
 const LINE_TO    = 'ここに入力';
 
@@ -913,12 +851,64 @@ const EMPLOYEES = [
   { key:'kamizato', name:'上里' }
 ];
 
-// カレンダーページからPOSTされたデータを受け取りスクリプトプロパティに保存
+const DATA_SHEET = 'calData'; // スプレッドシートのシート名
+
+// スプレッドシートのシートを取得（なければ作成）
+function getDataSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(DATA_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(DATA_SHEET);
+    const initialData = JSON.stringify({
+      absences: { tanaka: [], haruta: [], kamizato: [] },
+      events: {}
+    });
+    sheet.getRange('A1').setValue(initialData);
+  }
+  return sheet;
+}
+
+// ── GET: カレンダーページからデータを読み込む ──────────────────
+function doGet(e) {
+  const action = (e.parameter && e.parameter.action) || 'getData';
+
+  if (action === 'getData') {
+    const sheet = getDataSheet();
+    const raw = sheet.getRange('A1').getValue();
+    const data = raw || JSON.stringify({
+      absences: { tanaka: [], haruta: [], kamizato: [] },
+      events: {}
+    });
+    return ContentService
+      .createTextOutput(data)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // テスト用（URLに直接アクセスしたときの確認）
+  return ContentService
+    .createTextOutput(JSON.stringify({ ok: true, message: 'GAS is running' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ── POST: カレンダーページからデータを保存する ─────────────────
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
-    PropertiesService.getScriptProperties()
-      .setProperty('calData', JSON.stringify(data));
+    const raw = e.postData.contents;
+    // データが正しいJSONか確認
+    JSON.parse(raw);
+
+    const sheet = getDataSheet();
+    sheet.getRange('A1').setValue(raw);
+
+    // 更新ログを記録
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let log = ss.getSheetByName('更新ログ');
+    if (!log) {
+      log = ss.insertSheet('更新ログ');
+      log.appendRow(['更新日時', 'データサイズ(文字)']);
+    }
+    log.appendRow([new Date(), raw.length]);
+
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -929,29 +919,32 @@ function doPost(e) {
   }
 }
 
+// ================================================================
 // 毎朝6時トリガーで実行 → 今日の予定をLINEに通知
+// ================================================================
 function sendDailyNotification() {
-  var raw = PropertiesService.getScriptProperties().getProperty('calData');
+  const sheet = getDataSheet();
+  const raw = sheet.getRange('A1').getValue();
   if (!raw) { Logger.log('データなし'); return; }
 
-  var calData = JSON.parse(raw);
-  var today   = new Date();
-  var month   = today.getMonth() + 1;
-  var day     = today.getDate();
-  var year    = today.getFullYear();
-  var m2      = month < 10 ? '0' + month : '' + month;
-  var d2      = day   < 10 ? '0' + day   : '' + day;
-  var dateStr = year + '-' + m2 + '-' + d2;
-  var wdays   = ['日','月','火','水','木','金','土'];
-  var wday    = wdays[today.getDay()];
+  const calData = JSON.parse(raw);
+  const today   = new Date();
+  const year    = today.getFullYear();
+  const month   = today.getMonth() + 1;
+  const day     = today.getDate();
+  const m2      = month < 10 ? '0' + month : '' + month;
+  const d2      = day   < 10 ? '0' + day   : '' + day;
+  const dateStr = year + '-' + m2 + '-' + d2;
+  const wdays   = ['日','月','火','水','木','金','土'];
+  const wday    = wdays[today.getDay()];
 
-  var absences    = calData.absences || {};
-  var events      = calData.events   || {};
-  var presentList = [];
-  var absentList  = [];
+  const absences    = calData.absences || {};
+  const events      = calData.events   || {};
+  const presentList = [];
+  const absentList  = [];
 
   EMPLOYEES.forEach(function(emp) {
-    var list = absences[emp.key] || [];
+    const list = absences[emp.key] || [];
     if (list.indexOf(dateStr) >= 0) {
       absentList.push(emp.name);
     } else {
@@ -959,9 +952,8 @@ function sendDailyNotification() {
     }
   });
 
-  var todayEvents = events[dateStr] || [];
-
-  var msg = '📅 ' + month + '月' + day + '日（' + wday + '）の予定\\n';
+  const todayEvents = events[dateStr] || [];
+  let msg = '📅 ' + month + '月' + day + '日（' + wday + '）の予定\\n';
   msg += '✅ 出勤: ' + (presentList.length ? presentList.join('、') : 'なし') + '\\n';
   msg += '🏠 休み: ' + (absentList.length ? absentList.join('、') : 'なし');
   if (todayEvents.length) {
@@ -969,7 +961,7 @@ function sendDailyNotification() {
     todayEvents.forEach(function(ev) { msg += '\\n  · ' + (ev.name || ev); });
   }
 
-  var options = {
+  const options = {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -981,7 +973,8 @@ function sendDailyNotification() {
     }),
     muteHttpExceptions: true
   };
-  var res = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
+
+  const res = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
   Logger.log('LINE: ' + res.getContentText());
 }`;
 
@@ -1009,7 +1002,6 @@ function showToast(msg) {
   clearTimeout(_tt);
   _tt = setTimeout(() => t.classList.remove('show'), 2200);
 }
-
 // ================================================================
 // 初期化
 // ================================================================
